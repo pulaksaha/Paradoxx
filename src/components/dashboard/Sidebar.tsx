@@ -1,14 +1,15 @@
 import { Activity, Bed, Scissors, Truck, Droplet, Bell, Settings, LayoutDashboard } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Overview", active: true },
-  { icon: Bed, label: "Beds & Wards" },
-  { icon: Scissors, label: "Operation Theatres" },
-  { icon: Truck, label: "Ambulances" },
-  { icon: Droplet, label: "Blood Bank" },
-  { icon: Bell, label: "Alerts" },
-  { icon: Settings, label: "Settings" },
+  { icon: LayoutDashboard, label: "Overview", to: "/" },
+  { icon: Bed, label: "Beds & Wards", to: "/beds" },
+  { icon: Scissors, label: "Operation Theatres", to: "/ot" },
+  { icon: Truck, label: "Ambulances", to: "/ambulances" },
+  { icon: Droplet, label: "Blood Bank", to: "/blood" },
+  { icon: Bell, label: "Alerts", to: "/alerts" },
+  { icon: Settings, label: "Settings", to: "/settings" },
 ];
 
 export const Sidebar = () => {
@@ -25,18 +26,22 @@ export const Sidebar = () => {
       </div>
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => (
-          <button
+          <NavLink
             key={item.label}
-            className={cn(
-              "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-base",
-              item.active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-card"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              cn(
+                "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-base",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-card"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              )
+            }
           >
             <item.icon className="h-4 w-4" />
             {item.label}
-          </button>
+          </NavLink>
         ))}
       </nav>
       <div className="m-3 rounded-xl bg-gradient-soft p-4 border border-border">
