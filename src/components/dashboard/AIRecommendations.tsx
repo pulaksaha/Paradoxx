@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
 import { Sparkles, RefreshCw, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getGeminiRecommendations, type Recommendation } from "@/lib/gemini";
 import { wards, operationTheatres, ambulances, bloodInventory, alerts } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface Recommendation {
-  title: string;
-  detail: string;
-  severity: "critical" | "high" | "medium";
-  category: "beds" | "ot" | "ambulance" | "blood";
-  impact: string;
-}
 
 const sevStyle = {
   critical: "bg-destructive/10 text-destructive border-destructive/20",
@@ -33,16 +25,13 @@ export const AIRecommendations = () => {
         blood: bloodInventory.map(b => ({ type: b.type, units: b.units, min: b.minRequired, expiring: b.expiringSoon })),
         alerts: alerts.map(a => ({ message: a.message, severity: a.severity })),
       };
-      const { data, error } = await supabase.functions.invoke("ai-recommendations", { body: { snapshot } });
-      if (error) throw error;
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-      setRecs(data?.recommendations ?? []);
+
+      const recommendations = await getGeminiRecommendations(snapshot);
+      setRecs(recommendations);
     } catch (e) {
       console.error(e);
-      toast.error("Could not generate recommendations");
+      const msg = e instanceof Error ? e.message : "Could not generate recommendations";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -60,7 +49,7 @@ export const AIRecommendations = () => {
           <div>
             <h3 className="text-sm font-semibold flex items-center gap-2">
               AI Orchestration
-              <span className="text-[10px] uppercase tracking-wide bg-primary text-primary-foreground px-1.5 py-0.5 rounded">Live</span>
+              <span className="text-[10px] uppercase tracking-wide bg-primary text-primary-foreground px-1.5 py-0.5 rounded">Gemini</span>
             </h3>
             <p className="text-[11px] text-muted-foreground">Prioritized actions for next 30 min</p>
           </div>
@@ -87,7 +76,9 @@ export const AIRecommendations = () => {
           </div>
         )}
         {!loading && recs.length === 0 && (
-          <div className="text-center py-12 text-sm text-muted-foreground">No recommendations yet.</div>
+          <div className="text-center py-12 text-sm text-muted-foreground">
+            No recommendations yet. Add your Gemini API key and click Re-analyze.
+          </div>
         )}
         {recs.map((r, i) => (
           <div key={i} className="group rounded-xl border border-border p-4 hover:border-primary/40 hover:shadow-card transition-base">
